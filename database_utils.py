@@ -49,11 +49,11 @@ class DatabaseConnector:
             List of all the tables in the connected database
         """
         engine = self.init_db_engine()
-        engine.connect()
 
-        from sqlalchemy import inspect
-        inspector = inspect(engine)
-        return inspector.get_table_names()
+        with engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
+            from sqlalchemy import inspect
+            inspector = inspect(engine)
+            return inspector.get_table_names()
 
 if __name__ == "__main__":
     dbc = DatabaseConnector()
