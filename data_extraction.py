@@ -26,7 +26,7 @@ class DataExtractor:
             DataFrame containing data from 'table_name'
         """
         import pandas as pd
-        return pd.read_sql_table(table_name, db_connector.init_db_engine())
+        return pd.read_sql_table(table_name, db_connector.init_db_engine('db_creds.yaml'))
 
 if __name__ == "__main__":
     dbe = DataExtractor()
