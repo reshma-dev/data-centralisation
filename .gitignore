@@ -161,4 +161,5 @@ cython_debug/
 
 .vscode
 db_creds.yaml
+db_creds_local.yaml
 .DS_Store
