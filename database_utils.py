@@ -80,7 +80,7 @@ class DatabaseConnector:
         """
 
         with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
-            df.to_sql(table_name, conn, if_exists= 'replace')
+            df.to_sql(table_name, conn, if_exists= 'replace', index=False)
 
 
 if __name__ == "__main__":
