@@ -90,8 +90,13 @@ if __name__ == "__main__":
     from data_cleaning import DataCleaning
 
     dbclean = DataCleaning()
-    df = dbclean.clean_user_data()
-    print(f"Number of clean entries: {len(df)}")
+    # df = dbclean.clean_user_data()
+    # print(f"Number of clean entries: {len(df)}")
 
     dbconn_local = DatabaseConnector('db_creds_local.yaml')
-    dbconn_local.upload_to_db(df, 'dim_users')
+    # dbconn_local.upload_to_db(df, 'dim_users')
+
+    df_cards = dbclean.clean_card_data()
+    print(f"Number of clean entries: {len(df_cards)}")
+
+    dbconn_local.upload_to_db(df_cards, 'dim_card_details')
