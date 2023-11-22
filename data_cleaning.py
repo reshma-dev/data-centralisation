@@ -98,7 +98,57 @@ class DataCleaning():
         print(f"Number of entries with invalid dates: {df['invalid_date_flag'].sum()}")
         return df
 
+    def clean_card_data(self):
+        """
+        Method for cleaning card data extracted from a PDF
+        """
+        from data_extraction import DataExtractor
+        dbe = DataExtractor()
+        link_to_pdf = "https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf"
+        
+        df_list = dbe.retrieve_pdf_data(link_to_pdf)
+        
+        import pandas as pd
+        df = pd.concat(df_list, ignore_index=True)
+
+        # 1. Set data types
+        df.card_number = df.card_number.astype('string')
+        df.expiry_date = df.expiry_date.astype('string')
+        df.card_provider = df.card_provider.astype('category')
+
+        # 2. Eliminate invalid rows using expiry date column 
+
+        # Add a new column to look at which 'expiry_date' entries fail to parse to MM/YY format
+        df['invalid_exp_date'] = pd.to_datetime(df.expiry_date, format='%m/%y', errors='coerce')
+        print(f"Number of rows with invalid expiry date: {len(df[df['invalid_exp_date'].isna()])}")
+
+        # As all other columns in the filtered set contain invalid data too,
+        # it's safe to drop all rows where the expiry_date is invalid (25 rows dropped)
+        # i.e. where invalid_exp_date is NaT
+        df = df.dropna(subset=['invalid_exp_date'])
+
+        # Delete the temporary column from data frame
+        df = df.drop(['invalid_exp_date'], axis=1)
+
+        # 3. Set Data type of the date_payment_confirmed column to datetime
+        df['date_payment_confirmed'] = pd.to_datetime(df.date_payment_confirmed, format='mixed', errors='coerce') 
+        print("No payment date entries failed to parse")
+
+        # 4. Check for duplicate card_number entries
+        df = df.drop_duplicates(subset='card_number', keep='first')
+        print("No duplicate card_numbers were found")
+        
+        # 5. Remove non-digit characters from card_number
+        df['card_number'] = df['card_number'].str.replace(r'[^0-9]?', '', regex=True)
+
+        return df
+    
+        
 if __name__ == "__main__":
     dc = DataCleaning()
     user_data = dc.clean_user_data()
     print("Records with invalid join dates: \n", user_data[user_data['invalid_date_flag']])
+
+    cleaned_card_data = dc.clean_card_data()
+    print(f"Number of cleaned rows: {len(cleaned_card_data)}")
+    print(cleaned_card_data.head(20))
