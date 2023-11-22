@@ -42,7 +42,7 @@ class DataCleaning():
         from database_utils import DatabaseConnector
 
         dbe = DataExtractor()
-        dbc = DatabaseConnector()
+        dbc = DatabaseConnector('db_creds.yaml')
 
         # Read contents of the legacy_users table
         df = dbe.read_rds_table(dbc, 'legacy_users')

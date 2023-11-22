@@ -26,10 +26,10 @@ class DataExtractor:
             DataFrame containing data from 'table_name'
         """
         import pandas as pd
-        return pd.read_sql_table(table_name, db_connector.init_db_engine('db_creds.yaml'))
+        return pd.read_sql_table(table_name, db_connector.engine)
 
 if __name__ == "__main__":
     dbe = DataExtractor()
-    dbc = DatabaseConnector()
+    dbc = DatabaseConnector('db_creds.yaml')
     df = dbe.read_rds_table(dbc, 'legacy_users')
     print(df.head())
