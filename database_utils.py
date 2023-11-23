@@ -101,5 +101,8 @@ if __name__ == "__main__":
 
     # dbconn_local.upload_to_db(df_cards, 'dim_card_details')
 
-    df_stores = dbclean.clean_store_data()
-    dbconn_local.upload_to_db(df_stores, 'dim_store_details')
+    # df_stores = dbclean.clean_store_data()
+    # dbconn_local.upload_to_db(df_stores, 'dim_store_details')
+
+    df_products = dbclean.clean_products_data()
+    dbconn_local.upload_to_db(df_products, 'dim_products')
