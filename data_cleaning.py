@@ -143,12 +143,95 @@ class DataCleaning():
 
         return df
     
+    def clean_store_data(self):
+        """
+        Method for cleaning store data retrieved using an API
+        """
+        import pandas as pd
+        import numpy as np
+
+        from data_extraction import DataExtractor
+        dbe = DataExtractor()
+        df = dbe.get_stores()
+
+        # 1. Delete the 'lat' column as it does not seem to contain any valid entries
+        
+        # Column 'lat' contains only 11 non-null objects
+        # Check what the non-nulls are, to know if it is ok to delete the column
+        # df[~df.lat.isna()]
+        
+        df = df.drop(['lat'], axis=1)
+
+        # 2. Delete rows containing all NULL strings as values. These rows don't get caught in dropna, so first
+        #    replace 'NULL' string with NaN to be able to delete them using dropna
+        df.replace('NULL', np.nan, inplace=True)
+
+        # 'thresh' specifies the minimum number of non-null values required for a row to be retained
+        #  we want to retain all rows where even a single column (along with non-NaN index) is non-NaN, so set to '2'
+        df.dropna(thresh=2, inplace=True)
+
+        # 3. Set data types
+        # if self.is_within_int32_range('index', df):
+        df['index'] = df['index'].astype('int32')
+
+        # string columns
+        df.address = df.address.astype('string')
+        df.locality = df.locality.astype('string')
+        df.store_code = df.store_code.astype('string')
+
+        # Rows with invalid opening date contain all other values invalid too, so delete those rows
+        df['opening_dt_tmp'] = pd.to_datetime(df.opening_date, format='mixed', errors='coerce')
+        df = df.dropna(subset=['opening_dt_tmp'])
+
+        # Delete the temp column
+        df = df.drop('opening_dt_tmp', axis=1)
+
+        # Set latitude and longitude to float
+        # Replace 'N/A' with pd.NA
+        df['longitude'].replace('N/A', pd.NA, inplace=True)
+        df['latitude'].replace('N/A', pd.NA, inplace=True)
+
+        # Convert the column to numeric, handling pd.NA
+        df['longitude'] = pd.to_numeric(df['longitude'], errors='coerce')
+        df['latitude'] = pd.to_numeric(df['latitude'], errors='coerce')
+
+        df['longitude'] = df['longitude'].astype(float)
+        df['latitude'] = df['latitude'].astype(float)
+
+        # category columns
+        df.store_type = df.store_type.astype('category')
+        df.country_code = df.country_code.astype('category')
+        df.continent = df.continent.astype('category')
+
+        # numeric
+        df['staff_numbers_tmp'] = pd.to_numeric(df['staff_numbers'], errors='coerce')
+        df[df['staff_numbers_tmp'].isna()]
+
+        # 4. Fix typos in the staff_numbers column
+        # As rows where staff_numbers column contains alphabets contain valid data in rest of the columns
+        # those alphas look like typos, so remove the alphabets to keep only numberic data
+        df['staff_numbers'] = df['staff_numbers'].str.replace(r'[^0-9]?', '', regex=True)
+        # then convert dtype to numeric
+        df.staff_numbers = df.staff_numbers.astype('int32')
+
+        # delete temp column
+        df.drop(['staff_numbers_tmp'], axis=1)
+
+        # 5. Fix typos in continent column
+        df.continent.unique()
+        df.continent = df.continent.replace('eeAmerica', 'America')
+        df.continent = df.continent.replace('eeEurope', 'Europe')
+        return df
         
 if __name__ == "__main__":
     dc = DataCleaning()
-    user_data = dc.clean_user_data()
-    print("Records with invalid join dates: \n", user_data[user_data['invalid_date_flag']])
+    # user_data = dc.clean_user_data()
+    # print("Records with invalid join dates: \n", user_data[user_data['invalid_date_flag']])
 
-    cleaned_card_data = dc.clean_card_data()
-    print(f"Number of cleaned rows: {len(cleaned_card_data)}")
-    print(cleaned_card_data.head(20))
+    # cleaned_card_data = dc.clean_card_data()
+    # print(f"Number of cleaned rows: {len(cleaned_card_data)}")
+    # print(cleaned_card_data.head(20))
+
+    store_data = dc.clean_store_data()
+    print(store_data.info())
+    print(store_data.tail(25))
