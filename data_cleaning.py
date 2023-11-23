@@ -298,6 +298,30 @@ class DataCleaning():
 
         return df
 
+    def clean_orders_data(self):
+        """
+        Method for cleaning orders data
+        """
+        from data_extraction import DataExtractor
+        from database_utils import DatabaseConnector
+
+        dbe = DataExtractor()
+        dbc = DatabaseConnector('db_creds.yaml')
+
+        # Read contents of the orders_table table
+        df = dbe.read_rds_table(dbc, 'orders_table')
+
+        # Drop the invalid columns
+        df = df.drop(['1', 'first_name', 'last_name'], axis=1)
+
+        # Set data types
+        df.date_uuid = df.date_uuid.astype('string')
+        df.user_uuid = df.user_uuid.astype('string')
+        df.card_number = df.card_number.astype('string')
+        df.store_code = df.store_code.astype('string')
+        df.product_code = df.product_code.astype('string')
+        
+        return df
 
 if __name__ == "__main__":
     dc = DataCleaning()
@@ -312,6 +336,10 @@ if __name__ == "__main__":
     # print(store_data.info())
     # print(store_data.tail(25))
 
-    prod_data = dc.clean_products_data()
-    print(prod_data.info())
-    print(prod_data.tail())
+    # prod_data = dc.clean_products_data()
+    # print(prod_data.info())
+    # print(prod_data.tail())
+
+    orders_data = dc.clean_orders_data()
+    print(orders_data.info())
+    print(orders_data.tail())
