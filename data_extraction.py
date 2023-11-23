@@ -106,6 +106,29 @@ class DataExtractor:
         
         return pd.json_normalize(stores)
     
+    def extract_from_s3(self):
+        """
+        Method to extract data from a CSV in an S3 bucket
+        into a DataFrame and return it
+        """
+        import pandas as pd
+        import boto3
+        from io import BytesIO
+
+        bucket_name = 'data-handling-public'
+        file_key = 'products.csv'
+
+        # Create an S3 client
+        s3 = boto3.client('s3')
+
+        # Read the CSV file into a Pandas DataFrame
+        obj = s3.get_object(Bucket=bucket_name, Key=file_key)
+        df = pd.read_csv(BytesIO(obj['Body'].read()), index_col=0, header=0)
+        print(f"{file_key}: data loaded successfully")
+
+        return df
+
+    
 
 if __name__ == "__main__":
     dbe = DataExtractor()
