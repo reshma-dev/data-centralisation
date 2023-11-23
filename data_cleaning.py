@@ -222,7 +222,83 @@ class DataCleaning():
         df.continent = df.continent.replace('eeAmerica', 'America')
         df.continent = df.continent.replace('eeEurope', 'Europe')
         return df
+    
+    def convert_product_weights(self, products_df):
+        """
+        Method to convert varying units to equivalent kg
+        """
+        import pandas as pd
         
+        # Define a function to convert different units to kg
+        def convert_to_kg(weight_str):
+            
+            import re
+            # Extract numerical values and unit from the weight string
+            # Looking for digits followed by optional 'x' and more digits followed by unit as 3 groups
+            match = re.match(r'([\d.]+)\s*x?\s*([\d.]+)?\s*([\w]+)', weight_str)
+            
+            if match:
+                value1, value2, unit = match.groups()
+                value1 = float(value1)
+                
+                # If 'x' is present, calculate the product of the two values
+                if value2:
+                    value2 = float(value2)
+                    value = value1 * value2
+                else:
+                    value = value1
+                
+                # Convert to kg based on unit
+                if unit == 'kg':
+                    return value
+                elif unit == 'g':
+                    return value / 1000
+                elif unit == 'oz':
+                    return value * 0.0283495  # 1 oz is approximately 0.0283495 kg
+                elif unit == 'ml':
+                    return value / 1000  # 1 ml is approximately 1 g
+                else:
+                    return value  # Return value for unsupported units
+            else:
+                return None  # Return None if the format is not recognized
+
+        # Apply the conversion function to the 'weight' column
+        products_df['weight'] = products_df['weight'].apply(lambda x: convert_to_kg(x) if pd.notna(x) else x)
+        
+        return products_df
+ 
+    def clean_products_data(self):
+        """
+        Method to clean products data
+        """
+        import pandas as pd
+
+        from data_extraction import DataExtractor
+        dbe = DataExtractor()
+        df = dbe.extract_from_s3()
+
+        # 1. Drop the rows containing all columns with 'NULL'
+        df = df.dropna()
+
+        # 2. Set string and category dtypes
+        df.product_name = df.product_name.astype('string')
+        df.product_price = df.product_price.astype('string')
+        df.category = df.category.astype('category')
+        df.EAN = df.EAN.astype('string')
+        df.uuid = df.uuid.astype('string')
+        df.removed = df.removed.astype('category')
+        df.product_code = df.product_code.astype('string')
+
+        # 3. Set date type & eliminate invalid rows
+        df['date_added'] = pd.to_datetime(df['date_added'], format='mixed', errors='coerce')
+        df = df.dropna(subset = ['date_added'])
+
+        # 4. Convert weights to kg
+        df = self.convert_product_weights(df)
+
+        return df
+
+
 if __name__ == "__main__":
     dc = DataCleaning()
     # user_data = dc.clean_user_data()
@@ -232,6 +308,10 @@ if __name__ == "__main__":
     # print(f"Number of cleaned rows: {len(cleaned_card_data)}")
     # print(cleaned_card_data.head(20))
 
-    store_data = dc.clean_store_data()
-    print(store_data.info())
-    print(store_data.tail(25))
+    # store_data = dc.clean_store_data()
+    # print(store_data.info())
+    # print(store_data.tail(25))
+
+    prod_data = dc.clean_products_data()
+    print(prod_data.info())
+    print(prod_data.tail())
