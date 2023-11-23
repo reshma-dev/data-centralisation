@@ -96,7 +96,10 @@ if __name__ == "__main__":
     dbconn_local = DatabaseConnector('db_creds_local.yaml')
     # dbconn_local.upload_to_db(df, 'dim_users')
 
-    df_cards = dbclean.clean_card_data()
-    print(f"Number of clean entries: {len(df_cards)}")
+    # df_cards = dbclean.clean_card_data()
+    # print(f"Number of clean entries: {len(df_cards)}")
 
-    dbconn_local.upload_to_db(df_cards, 'dim_card_details')
+    # dbconn_local.upload_to_db(df_cards, 'dim_card_details')
+
+    df_stores = dbclean.clean_store_data()
+    dbconn_local.upload_to_db(df_stores, 'dim_store_details')
