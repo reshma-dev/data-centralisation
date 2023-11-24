@@ -275,7 +275,11 @@ class DataCleaning():
 
         from data_extraction import DataExtractor
         dbe = DataExtractor()
-        df = dbe.extract_from_s3()
+
+        bucket_name = 'data-handling-public'
+        file_key = 'products.csv'
+
+        df = dbe.extract_from_s3(bucket_name=bucket_name, file_key=file_key)
 
         # 1. Drop the rows containing all columns with 'NULL'
         df = df.dropna()
@@ -331,7 +335,11 @@ class DataCleaning():
 
         from data_extraction import DataExtractor
         dbe = DataExtractor()
-        df = dbe.extract_json_from_s3()
+
+        bucket_name = 'data-handling-public'
+        file_key = 'date_details.json'
+
+        df = dbe.extract_from_s3(bucket_name=bucket_name, file_key=file_key)
 
         # 1. Drop the rows containing 'NULL' or invalid entries using timestamp
         df['timestamp_temp'] = pd.to_datetime(df['timestamp'], format='mixed', errors='coerce')

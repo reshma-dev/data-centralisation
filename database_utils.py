@@ -110,5 +110,5 @@ if __name__ == "__main__":
     # df_orders = dbclean.clean_orders_data()
     # dbconn_local.upload_to_db(df_orders, 'orders_table')
 
-    df_timedetails = dbclean.clean_time_detail()
-    dbconn_local.upload_to_db(df_timedetails, 'dim_date_times')
+    # df_timedetails = dbclean.clean_time_detail()
+    # dbconn_local.upload_to_db(df_timedetails, 'dim_date_times')
