@@ -322,6 +322,31 @@ class DataCleaning():
         df.product_code = df.product_code.astype('string')
         
         return df
+    
+    def clean_time_detail(self):
+        """
+        Method to clean time detail data
+        """
+        import pandas as pd
+
+        from data_extraction import DataExtractor
+        dbe = DataExtractor()
+        df = dbe.extract_json_from_s3()
+
+        # 1. Drop the rows containing 'NULL' or invalid entries using timestamp
+        df['timestamp_temp'] = pd.to_datetime(df['timestamp'], errors='coerce')
+        df = df.dropna(subset=['timestamp_temp'])
+        df = df.drop(['timestamp_temp'], axis=1)
+        
+        # 2. Set dtypes
+        df.time_period = df.time_period.astype('category')
+        df.date_uuid = df.date_uuid.astype('string')
+
+        df.month = df.month.astype('int16')
+        df.year = df.year.astype('int16')
+        df.day = df.day.astype('int16')
+
+        return df
 
 if __name__ == "__main__":
     dc = DataCleaning()
@@ -340,6 +365,10 @@ if __name__ == "__main__":
     # print(prod_data.info())
     # print(prod_data.tail())
 
-    orders_data = dc.clean_orders_data()
-    print(orders_data.info())
-    print(orders_data.tail())
+    # orders_data = dc.clean_orders_data()
+    # print(orders_data.info())
+    # print(orders_data.tail())
+
+    time_data = dc.clean_time_detail()
+    print(time_data.info())
+    print(time_data.tail())
