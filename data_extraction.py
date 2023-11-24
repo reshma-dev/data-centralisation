@@ -127,6 +127,30 @@ class DataExtractor:
         print(f"{file_key}: data loaded successfully")
 
         return df
+    
+    def extract_json_from_s3(self):
+        """
+        Method to extract data from a json in an S3 bucket
+        into a DataFrame and return it
+        """
+        import boto3
+        import pandas as pd
+        from io import StringIO
+        
+        # Create S3 client
+        s3 = boto3.client('s3')
+
+        bucket_name = 'data-handling-public'
+        file_key = 'date_details.json'
+
+        # Read the JSON file from S3
+        obj = s3.get_object(Bucket=bucket_name, Key=file_key)
+
+        # Load JSON data into Pandas DataFrame
+        df = pd.read_json(StringIO(obj['Body'].read().decode('utf-8')))
+        print(f"{file_key}: data loaded successfully")
+        
+        return df
 
     
 
