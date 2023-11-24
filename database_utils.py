@@ -1,3 +1,7 @@
+from sqlalchemy import create_engine
+from sqlalchemy import inspect
+import yaml
+
 class DatabaseConnector:
     """
     Class to connect to database
@@ -19,7 +23,6 @@ class DatabaseConnector:
         <class 'dict'>
             A dictionary containing credentials read from db_creds.yaml
         """
-        import yaml
         with open(creds_file_name, 'r') as file:
             return yaml.safe_load(file)
         
@@ -39,8 +42,6 @@ class DatabaseConnector:
             Initialised instance of the SQLAlchemy Database Engine object
         """
         db_creds = self.__read_db_creds(creds_file_name)
-
-        from sqlalchemy import create_engine
 
         DATABASE_TYPE = 'postgresql'
         DBAPI = 'psycopg2'
@@ -63,7 +64,7 @@ class DatabaseConnector:
         """
 
         with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
-            from sqlalchemy import inspect
+            
             inspector = inspect(self.engine)
             return inspector.get_table_names()
         
@@ -82,33 +83,5 @@ class DatabaseConnector:
         with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
             df.to_sql(table_name, conn, if_exists= 'replace', index=False)
 
-
 if __name__ == "__main__":
-    dbconn = DatabaseConnector('db_creds.yaml')
-    print(dbconn.list_db_tables())
-
-    from data_cleaning import DataCleaning
-
-    dbclean = DataCleaning()
-    # df = dbclean.clean_user_data()
-    # print(f"Number of clean entries: {len(df)}")
-
-    dbconn_local = DatabaseConnector('db_creds_local.yaml')
-    # dbconn_local.upload_to_db(df, 'dim_users')
-
-    # df_cards = dbclean.clean_card_data()
-    # print(f"Number of clean entries: {len(df_cards)}")
-
-    # dbconn_local.upload_to_db(df_cards, 'dim_card_details')
-
-    # df_stores = dbclean.clean_store_data()
-    # dbconn_local.upload_to_db(df_stores, 'dim_store_details')
-
-    # df_products = dbclean.clean_products_data()
-    # dbconn_local.upload_to_db(df_products, 'dim_products')
-
-    # df_orders = dbclean.clean_orders_data()
-    # dbconn_local.upload_to_db(df_orders, 'orders_table')
-
-    # df_timedetails = dbclean.clean_time_detail()
-    # dbconn_local.upload_to_db(df_timedetails, 'dim_date_times')
+    pass

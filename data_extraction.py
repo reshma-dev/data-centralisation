@@ -1,3 +1,12 @@
+from io import BytesIO, StringIO
+import boto3
+import json
+import os
+import pandas as pd
+import requests
+import tabula
+import yaml
+
 from database_utils import DatabaseConnector
 
 class DataExtractor:
@@ -25,7 +34,6 @@ class DataExtractor:
         <class 'pandas.core.frame.DataFrame'>
             DataFrame containing data from 'table_name'
         """
-        import pandas as pd
         return pd.read_sql_table(table_name, db_connector.engine)
     
     def retrieve_pdf_data(self, pdf_path:str):
@@ -42,7 +50,6 @@ class DataExtractor:
         list of <class 'pandas.core.frame.DataFrame'>
             DataFrame containing data extracted from PDF at the link
         """
-        import tabula
 
         return tabula.read_pdf(pdf_path, pages='all')
     
@@ -60,7 +67,7 @@ class DataExtractor:
         <class 'dict'>
             A dictionary containing credentials read from db_creds.yaml
         """
-        import yaml
+        
         with open(creds_file_name, 'r') as file:
             return yaml.safe_load(file)
     
@@ -68,7 +75,6 @@ class DataExtractor:
         """
         Method to get the total number of stores
         """
-        import requests
         header_details = self.__read_api_creds('api_creds.yaml')
         r = requests.get(stores_count_url, headers=header_details)
         return r.json()['number_stores']
@@ -77,7 +83,6 @@ class DataExtractor:
         """
         Method to retrieve store details for the given store number
         """
-        import requests
         header_details = self.__read_api_creds('api_creds.yaml')
         return requests.get(store_by_number_url, headers=header_details)
     
@@ -86,8 +91,6 @@ class DataExtractor:
         Method to fetch the number of stores and then get the data for each store
         The data is collected in a list and then returned as a DataFrame
         """
-        import json
-        import pandas as pd
         
         store_by_number_url = "https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details/{store_number}"
         stores_count_url = "https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/number_stores"
@@ -111,10 +114,6 @@ class DataExtractor:
         Method to extract data from a CSV in an S3 bucket
         into a DataFrame and return it
         """
-        import pandas as pd
-        import boto3
-        import os
-        from io import BytesIO, StringIO
 
         # Create an S3 client
         s3 = boto3.client('s3')
@@ -141,13 +140,4 @@ class DataExtractor:
     
 
 if __name__ == "__main__":
-    dbe = DataExtractor()
-    # dbc = DatabaseConnector('db_creds.yaml')
-    # df = dbe.read_rds_table(dbc, 'legacy_users')
-    # print(df.head())
-
-    # link_to_pdf = "https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf"
-    # print(dbe.retrieve_pdf_data(link_to_pdf))
-
-    df = dbe.get_stores()
-    print(df.head())
+    pass

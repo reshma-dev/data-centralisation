@@ -1,8 +1,15 @@
+import numpy as np
+import pandas as pd
+import re
+
+from data_extraction import DataExtractor
+from database_utils import DatabaseConnector
+
 class DataCleaning():
     """
     A utility class with methods to clean data from each of the data sources
     """
-    
+
     def is_within_int32_range(self, column_name, df):
         """
         Method to check if all the values in the column 'column_name', 
@@ -20,9 +27,7 @@ class DataCleaning():
         --------
         True if all the values in column_name are within int32 range
         False if one or more values are out of range
-
         """
-        import numpy as np
 
         # Get the minimum and maximum values of the column
         min_value = df[column_name].min()
@@ -36,10 +41,12 @@ class DataCleaning():
         """
         Method for cleaning of the legacy_users data 
         Look for NULL values, errors with dates, incorrectly typed values and rows filled with the wrong information
+
+        Returns:
+        --------
+        <class 'pandas.core.frame.DataFrame'>
+            DataFrame containing cleaned 'legacy_users' data
         """
-        import pandas as pd
-        from data_extraction import DataExtractor
-        from database_utils import DatabaseConnector
 
         dbe = DataExtractor()
         dbc = DatabaseConnector('db_creds.yaml')
@@ -101,14 +108,17 @@ class DataCleaning():
     def clean_card_data(self):
         """
         Method for cleaning card data extracted from a PDF
+
+        Returns:
+        --------
+        <class 'pandas.core.frame.DataFrame'>
+            DataFrame containing cleaned 'card_details.pdf' data
         """
-        from data_extraction import DataExtractor
         dbe = DataExtractor()
         link_to_pdf = "https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf"
         
         df_list = dbe.retrieve_pdf_data(link_to_pdf)
-        
-        import pandas as pd
+
         df = pd.concat(df_list, ignore_index=True)
 
         # 1. Set data types
@@ -146,11 +156,12 @@ class DataCleaning():
     def clean_store_data(self):
         """
         Method for cleaning store data retrieved using an API
+        Returns:
+        --------
+        <class 'pandas.core.frame.DataFrame'>
+            DataFrame containing cleaned data of all the stores
         """
-        import pandas as pd
-        import numpy as np
 
-        from data_extraction import DataExtractor
         dbe = DataExtractor()
         df = dbe.get_stores()
 
@@ -226,13 +237,22 @@ class DataCleaning():
     def convert_product_weights(self, products_df):
         """
         Method to convert varying units to equivalent kg
-        """
-        import pandas as pd
         
+        Parameters:
+        ----------
+        products_df: <class 'pandas.core.frame.DataFrame'>
+            DataFrame containing products data with 'weight' column containing varying units 
+            like oz, ml, gm, kg and multiples using 'x' (example: 10 x 3kg)
+        
+        Returns:
+        --------
+        <class 'pandas.core.frame.DataFrame'>
+            DataFrame containing 'weight' column converted to kg
+        """
+
         # Define a function to convert different units to kg
         def convert_to_kg(weight_str):
-            
-            import re
+
             # Extract numerical values and unit from the weight string
             # Looking for digits followed by optional 'x' and more digits followed by unit as 3 groups
             match = re.match(r'([\d.]+)\s*x?\s*([\d.]+)?\s*([\w]+)', weight_str)
@@ -270,10 +290,13 @@ class DataCleaning():
     def clean_products_data(self):
         """
         Method to clean products data
-        """
-        import pandas as pd
 
-        from data_extraction import DataExtractor
+        Returns:
+        -------
+        <class 'pandas.core.frame.DataFrame'>
+            DataFrame containing cleaned products data
+        """
+
         dbe = DataExtractor()
 
         bucket_name = 'data-handling-public'
@@ -305,9 +328,12 @@ class DataCleaning():
     def clean_orders_data(self):
         """
         Method for cleaning orders data
+
+        Returns:
+        -------
+        <class 'pandas.core.frame.DataFrame'>
+            DataFrame containing cleaned orders data
         """
-        from data_extraction import DataExtractor
-        from database_utils import DatabaseConnector
 
         dbe = DataExtractor()
         dbc = DatabaseConnector('db_creds.yaml')
@@ -330,10 +356,12 @@ class DataCleaning():
     def clean_time_detail(self):
         """
         Method to clean time detail data
-        """
-        import pandas as pd
 
-        from data_extraction import DataExtractor
+        Returns:
+        -------
+        <class 'pandas.core.frame.DataFrame'>
+            DataFrame containing cleaned time details data
+        """
         dbe = DataExtractor()
 
         bucket_name = 'data-handling-public'
@@ -357,26 +385,4 @@ class DataCleaning():
         return df
 
 if __name__ == "__main__":
-    dc = DataCleaning()
-    # user_data = dc.clean_user_data()
-    # print("Records with invalid join dates: \n", user_data[user_data['invalid_date_flag']])
-
-    # cleaned_card_data = dc.clean_card_data()
-    # print(f"Number of cleaned rows: {len(cleaned_card_data)}")
-    # print(cleaned_card_data.head(20))
-
-    # store_data = dc.clean_store_data()
-    # print(store_data.info())
-    # print(store_data.tail(25))
-
-    # prod_data = dc.clean_products_data()
-    # print(prod_data.info())
-    # print(prod_data.tail())
-
-    # orders_data = dc.clean_orders_data()
-    # print(orders_data.info())
-    # print(orders_data.tail())
-
-    time_data = dc.clean_time_detail()
-    print(time_data.info())
-    print(time_data.tail())
+    pass
