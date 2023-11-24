@@ -334,7 +334,7 @@ class DataCleaning():
         df = dbe.extract_json_from_s3()
 
         # 1. Drop the rows containing 'NULL' or invalid entries using timestamp
-        df['timestamp_temp'] = pd.to_datetime(df['timestamp'], errors='coerce')
+        df['timestamp_temp'] = pd.to_datetime(df['timestamp'], format='mixed', errors='coerce')
         df = df.dropna(subset=['timestamp_temp'])
         df = df.drop(['timestamp_temp'], axis=1)
         
