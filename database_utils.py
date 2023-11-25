@@ -62,11 +62,8 @@ class DatabaseConnector:
         list
             List of all the tables in the connected database
         """
-
-        with self.engine.execution_options(isolation_level='AUTOCOMMIT').connect() as conn:
-            
-            inspector = inspect(self.engine)
-            return inspector.get_table_names()
+        inspector = inspect(self.engine)
+        return inspector.get_table_names()
         
     def upload_to_db(self, df, table_name):
         """
@@ -84,4 +81,6 @@ class DatabaseConnector:
             df.to_sql(table_name, conn, if_exists= 'replace', index=False)
 
 if __name__ == "__main__":
+    dc = DatabaseConnector('db_creds_local.yaml')
+    print(dc.list_db_tables())
     pass

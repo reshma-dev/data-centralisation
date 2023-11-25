@@ -226,7 +226,7 @@ class DataCleaning():
         df.staff_numbers = df.staff_numbers.astype('int32')
 
         # delete temp column
-        df.drop(['staff_numbers_tmp'], axis=1)
+        df = df.drop(['staff_numbers_tmp'], axis=1)
 
         # 5. Fix typos in continent column
         df.continent.unique()
