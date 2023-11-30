@@ -17,7 +17,8 @@ Data Analysis is then done within the Relational Database using SQL.
 
 ## Installation Instructions
 
-Following tools and libraries have been used in this project
+Following tools and libraries have been used in this project.  
+Conda environment export is available in `data-central-env.yml` [here](/data-central-env.yml)
 
 ### Python 3.11
     - pandas                    2.1.1
