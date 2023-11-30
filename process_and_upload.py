@@ -54,8 +54,14 @@ def upload_tables_to_local_db(table_name:str, db_connector:DatabaseConnector, da
             db_connector.upload_to_db(df_timedetails, 'dim_date_times')
 
 if __name__ == "__main__":
+    
     data_cleaning = DataCleaning()
     db_conn_local = DatabaseConnector('db_creds_local.yaml')
 
+    upload_tables_to_local_db('dim_users', db_conn_local, data_cleaning)
+    upload_tables_to_local_db('dim_card_details', db_conn_local, data_cleaning)
+    upload_tables_to_local_db('dim_store_details', db_conn_local, data_cleaning)
+    upload_tables_to_local_db('dim_products', db_conn_local, data_cleaning)
+    upload_tables_to_local_db('orders_table', db_conn_local, data_cleaning)
     upload_tables_to_local_db('dim_date_times', db_conn_local, data_cleaning)
-    
+
