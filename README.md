@@ -5,6 +5,7 @@
 **[Installation Instructions](#installation-instructions)**<br>
 **[Usage Instructions](#usage-instructions)**<br>
 **[File structure of the project](#file-structure-of-the-project)**<br>
+**[Lessons learnt](#lessons-learnt)**<br>
 
 ## Introduction
 
@@ -57,7 +58,7 @@ Following tools and libraries have been used in this project
 
 - Run `process_and_upload.py`: This file contains calls to extract data from all the sources and upload it into the PostgreSQL instance for analysis
 
-- Use pgAdmin to execute queries for analysing data. The queries can be found under the `sql` folder
+- Use pgAdmin to execute queries for analysing data. The queries can be found under the `sql/analysis_queries` folder
 
 ## File structure of the project
 
@@ -76,3 +77,43 @@ Following tools and libraries have been used in this project
 
 ### Star schema created for the project:
 ![Star-schema-retail-data](/images/star-schema-retail-data.png)
+
+## Lessons learnt
+
+- Exploring data in notebooks made data cleaning easier and faster. Created `explore_*.ipynb` file per table so it's still available for debugging or reminding of decisions during the transformation process. Once happy, made them into functions to transfer to the scripts for the data flow pipeline.
+
+- Steps followed for the cleaning phase:
+
+    1. Set appropriate data types to the Dataframe columns: This helped get rid of rows with invalid data very quickly and easily. For example, the text snippets in date fields that did not parse with `to_datetime()` helped spot that the entire row was full of invalid data so was safe to delete
+    
+        For example, for products data:
+        ```
+        # 3. Set date type & eliminate invalid rows
+        
+        df['date_added'] = pd.to_datetime(df['date_added'], format='mixed', errors='coerce')
+        
+        df = df.dropna(subset = ['date_added'])
+        ```
+        During the exploration phase, it was useful to create a temporary column with the new data type or change so that the original and new could be compared side-by-side and once happy, the script could make the change to the original column.
+
+        For example, to clean the alphabet occurances from the staff number column
+        ```
+        # Create a new column `staff_numbers_tmp` with data type numeric
+        
+        df['staff_numbers_tmp'] = pd.to_numeric(df['staff_numbers'], errors='coerce')
+        df[df['staff_numbers_tmp'].isna()]
+
+        # As rows where staff_numbers column contains alphabets contain valid data in rest of the columns
+        # those alphas look like typos, so remove the alphabets to keep only numberic data
+        
+        df['staff_numbers'] = df['staff_numbers'].str.replace(r'[^0-9]?', '', regex=True)
+        
+        # then convert dtype to numeric
+        df.staff_numbers = df.staff_numbers.astype('int32')
+
+        # delete temp column
+        df = df.drop(['staff_numbers_tmp'], axis=1)
+        ```
+    2. Check for NaN or NULL values and duplicated data
+
+    3. Any data discrepancies spotted during the cleaning phase that were not clearly or confidently incorrect were marked in a new column so that during the Analysis phase, the queries would still see the data if needed, as well as have a handy extra column for making it easy to spot the discrepancies. For example, in some cases, the Date of joining was before Date of birth, but all other columns had correct-looking data, so added a new column `invalid_date_flag` to mark such cases.
